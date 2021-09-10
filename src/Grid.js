@@ -35,7 +35,7 @@ class Grid extends React.PureComponent {
   }
 
   componentDidUpdate() {
-    console.log("UPDATE",this.props.devices, this.state.items)
+    console.log("EDIT_LAYOUT",this.props.layoutID,this.props.devices, this.state.items)
     this.props.devices.forEach(device => {
       if ( this.state.items.find(o => o.i === device.id) === undefined ){
         console.log("missing",device.id, device.name)
@@ -101,6 +101,9 @@ class Grid extends React.PureComponent {
       return
 
     let deviceBox = this.props.devices.find(o => o.id === el.i)
+    if (deviceBox === undefined)
+      return
+
     return(
       <div key={i} data-grid={el} ref="supergrid" style={{
         border:'2px solid #282c34', 
@@ -124,10 +127,10 @@ class Grid extends React.PureComponent {
       // Add a new item. It must have a unique key!
       items: this.state.items.concat({
         i: device.id,
-        x: (this.state.items.length * 2) % (this.state.cols || 12),
+        x: (this.state.items.length * 2) % (this.state.cols || 9),
         y: 0,
         w: 3,
-        h: 3
+        h: 2
       }),
       // Increment the counter to ensure key is always unique.
       newCounter: this.state.newCounter + 1
@@ -160,8 +163,8 @@ class Grid extends React.PureComponent {
         {/* <button onClick={this.onAddItem}>Add Item</button>
         <button onClick={this.resetLayout}>Reset Layout</button> */}
         
-        <Button variant="contained" color="primary">
-          <SpringModal device={{"name":"Tutti","id":"all"}}></SpringModal>
+        <Button variant="contained" color="primary" style={{width:"95%"}}>
+          <SpringModal device={{"name":"Tutta la stanza","id":this.props.layoutID}}></SpringModal>
         </Button>
         <ReactGridLayout
           {...this.props}
@@ -192,6 +195,7 @@ function getFromLS(key) {
 }
 
 function saveToLS(key, value) {
+  console.log("SAVING", key)
     if (global.localStorage) {
         global.localStorage.setItem(
             "click-layout",

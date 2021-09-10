@@ -85,7 +85,7 @@ export default function SpringModal(props) {
   return (
     <div style={{width:"100%", height:"100%"}} onTouchEnd={() => {handleOpen()}} onMouseUp={() => {handleOpen()}}>
         <h5 onMouseUp={() => {handleOpen()}} onTouchEnd={() => {handleOpen()}}>{props.device.name}</h5>
-        {(props.device.power==="on")?"ON":"OFF"}
+        {/* {(props.device.power==="on")?"ON":"OFF"} */}
       <Modal
         className={classes.modal}
         open={open}
@@ -102,18 +102,18 @@ export default function SpringModal(props) {
               <Button color='secondary'
               onClick={()=>{
                   handleClose()
-              }}>CHIUDI</Button>
+              }}><u>CHIUDI</u></Button>
               <h3 id="spring-modal-title">{props.device.name}</h3>  
             </div>&nbsp;
             
-            <Button variant='contained' color='primary'
+            <Button variant='contained' color='primary' style={{width:"40%"}}
             onClick={()=>{
               props.device.power="off"
               axios.post("http://10.0.0.24:5000/api/dev/"+props.device.id+"/0").then(res =>{
                 console.log(res)
               })
             }}>SPEGNI</Button>&nbsp;
-            <Button variant='contained' color='primary'
+            <Button variant='contained' color='primary' style={{width:"40%"}}
             onClick={()=>{
               props.device.power="on"
               axios.post("http://10.0.0.24:5000/api/dev/"+props.device.id+"/1").then(res =>{
@@ -121,15 +121,24 @@ export default function SpringModal(props) {
               })
             }}>ACCENDI</Button><br></br><br></br>
 
-            Bianco Kelvin
-            <Slider onChange={(event, newValue)=>{
+            Luminosità
+            <Slider defaultValue={props.device.bright} onChange={(event, newValue)=>{
+              props.device.bright = newValue
+              axios.post("http://10.0.0.24:5000/api/dev/"+props.device.id+"/2",{"bright":newValue}).then(res =>{
+                console.log(res)
+              })
+            }} />
+            
+            Temperatura Colore
+            <Slider marks={[ {value:0, label:"Caldo"},{value:100, label:'Freddo'} ]} 
+            onChange={(event, newValue)=>{
               props.device.white = newValue
               axios.post("http://10.0.0.24:5000/api/dev/"+props.device.id+"/2",{"white":newValue}).then(res =>{
                 console.log(res)
               })
             }} />
 
-            Bianco RGB
+            {/* Bianco RGB
             <Slider defaultValue={props.device.bright} onChange={(event, newValue)=>{
               let color = [255,255,255]
               for (let index = 0; index < color.length; index++) {
@@ -140,21 +149,12 @@ export default function SpringModal(props) {
               axios.post("http://10.0.0.24:5000/api/dev/"+props.device.id+"/2",{"rgb":color}).then(res =>{
                 console.log(res)
               })
-            }} />
-
-
-            Luminosità
-            <Slider defaultValue={props.device.bright} onChange={(event, newValue)=>{
-              props.device.bright = newValue
-              axios.post("http://10.0.0.24:5000/api/dev/"+props.device.id+"/2",{"bright":newValue}).then(res =>{
-                console.log(res)
-              })
-            }} />
+            }} /> */}
 
             <CircularColor size={200} color={(props.device.rgb===undefined)?"#ff0000":rgbToHex(props.device.rgb[0],props.device.rgb[1],props.device.rgb[2])} onChange={(color) => {
               color = hexToRgb(color)
               for (let index = 0; index < color.length; index++) {
-                color[index] = parseInt((color[index]/100)*props.device.bright)
+                color[index] = parseInt((color[index]/100)*((props.device.bright!==undefined)?props.device.bright:75))
               }
               props.device.rgb = color
               axios.post("http://10.0.0.24:5000/api/dev/"+props.device.id+"/2",{"rgb":color}).then(res =>{
@@ -167,11 +167,15 @@ export default function SpringModal(props) {
             <div style={{display:"flex", "flexDirection":"row"}}>
               <Button variant='contained' color='secondary'
               onClick={()=>{
-                  handleClose()
-                  props.onDelete()
-              }}>ELIMINA</Button>
-
-              <i><p id="spring-modal-description">ID : {props.device.id}<br></br>IP : {props.device.ip}</p></i>
+                  // handleClose()
+                  // props.onDelete()
+                  axios.get("http://10.0.0.24:5000/api/dev/"+props.device.id+"/test").then(res =>{
+                    console.log(res)
+                  })
+              }}>IDENTIFICA</Button>&nbsp;
+              <Button variant='contained' color='secondary'
+              onClick={() => {navigator.clipboard.writeText(props.device.id)}}>Copia ID</Button>
+              &nbsp;<p><i>IP : {props.device.ip}</i></p>
             </div>
           </div>
         </Fade>
