@@ -7,7 +7,7 @@ import { Button } from '@material-ui/core';
 import axios from "axios";
 
 const ReactGridLayout = WidthProvider(RGL);
-const originalLayout = getFromLS("click-layout") || [];
+// const originalLayout = getFromLS("click-layout") || [];
 
 class Grid extends React.PureComponent {
   static defaultProps = {
@@ -22,11 +22,19 @@ class Grid extends React.PureComponent {
     super(props);
 
     let layoutID = this.props.layoutID
+    console.log("STARTUP",Object.keys(getFromLS(layoutID)).length,getFromLS(layoutID))
     // console.log(layoutID, originalLayout[layoutID])
     this.state = {
-      items: JSON.parse(JSON.stringify(originalLayout[layoutID]||[])),
-      newCounter: (originalLayout[layoutID]===undefined)?0:originalLayout[layoutID].length
+      // items: JSON.parse(JSON.stringify(getFromLS(layoutID) || [])),
+      layoutID,
+      devices: [],
+      items: (Object.keys(getFromLS(layoutID)).length===0)?[]:getFromLS(layoutID),
+      newCounter: Object.keys(getFromLS(layoutID)).length
     };
+
+    axios.get("http://10.0.0.24:5000/api/dev/"+layoutID+"/list",{crossDomain: true }).then(res => {
+      this.setState({devices: res.data})
+    })
 
     this.onLayoutChange = this.onLayoutChange.bind(this);
     this.resetLayout = this.resetLayout.bind(this);
@@ -35,8 +43,8 @@ class Grid extends React.PureComponent {
   }
 
   componentDidUpdate() {
-    console.log("EDIT_LAYOUT",this.props.layoutID,this.props.devices, this.state.items)
-    this.props.devices.forEach(device => {
+    console.log("CHANGE_LAYOUT",this.props.layoutID,this.state.devices, this.state.items)
+    this.state.devices.forEach(device => {
       if ( this.state.items.find(o => o.i === device.id) === undefined ){
         console.log("missing",device.id, device.name)
         this.onAddItem(device)
@@ -97,10 +105,10 @@ class Grid extends React.PureComponent {
     //     </span>
     //   </div>
     // );
-    if (this.props.devices === undefined)
+    if (this.state.devices === undefined)
       return
 
-    let deviceBox = this.props.devices.find(o => o.id === el.i)
+    let deviceBox = this.state.devices.find(o => o.id === el.i)
     if (deviceBox === undefined)
       return
 
@@ -127,9 +135,9 @@ class Grid extends React.PureComponent {
       // Add a new item. It must have a unique key!
       items: this.state.items.concat({
         i: device.id,
-        x: (this.state.items.length * 2) % (this.state.cols || 9),
+        x: (this.state.items.length * 2) % (this.state.cols || 12),
         y: 0,
-        w: 3,
+        w: 2,
         h: 2
       }),
       // Increment the counter to ensure key is always unique.
@@ -186,7 +194,7 @@ function getFromLS(key) {
   let ls = {};
   if (global.localStorage) {
     try {
-      ls = JSON.parse(global.localStorage.getItem("click-layout")) || {};
+      ls = JSON.parse(global.localStorage.getItem(key)) || {};
     } catch (e) {
       /*Ignore*/
     }
@@ -196,15 +204,9 @@ function getFromLS(key) {
 
 function saveToLS(key, value) {
   console.log("SAVING", key)
-    if (global.localStorage) {
-        global.localStorage.setItem(
-            "click-layout",
-            JSON.stringify({
-                ...JSON.parse(global.localStorage.getItem("click-layout")),
-                [key]: value
-            })
-        );
-    }
+  global.localStorage.setItem(
+      key, JSON.stringify(value)
+  );
 }
 
 export { Grid };

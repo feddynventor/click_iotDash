@@ -16,33 +16,27 @@ class App extends Component {
   constructor(props){
     super(props)
     this.state = {
-      devices: [],
-      selectedGroup: 0
+      groups: [],
+      selectedGroup: "0"
     }
   }
 
   componentDidMount() {
-    axios.get("http://10.0.0.24:5000/api/dev/0/list",{crossDomain: true }).then(
+    axios.get("http://10.0.0.24:5000/api/group/list",{crossDomain: true }).then(
       res => {
-        this.setState({devices: res.data})
+          console.log("GROUPS GATHERED",res.data)
+          this.setState({groups: res.data})
       }
     )
   }
 
   componentDidUpdate(){
+    // Alla modifica del gruppo selezionato e poi dello stato
     console.log("DID UPDATE",this.state)
   }
 
   selectGroup(gid){
     console.log("NEW GROUP",gid)
-
-    let devs = []
-    axios.get("http://10.0.0.24:5000/api/dev/"+gid+"/list",{crossDomain: true }).then(
-      res => {
-        this.setState({devices: res.data})
-      }
-    )
-    // this.setState( {selectedGroup: gid, devices: devs} )
     this.setState( {selectedGroup: gid} )
   }
 
@@ -60,13 +54,12 @@ class App extends Component {
                   console.log(res)
                 })
               }}>SCANSIONA IP</Button>&nbsp; */}
+
             <Button variant='contained' color='primary'
               onClick={()=>{
-                axios.get("http://10.0.0.24:5000/api/dev/"+this.state.selectedGroup+"/list",{crossDomain: true }).then(res => {
-                  this.setState({devices: res.data})
-                })
                 this.selectGroup(this.state.selectedGroup)
               }}>Ricarica</Button>&nbsp;
+
             <FormControl variant="filled" style={{width:"100%", borderRadius:"4px", backgroundColor: '#FFFFFF'}}>
               <InputLabel id="demo-simple-select-outlined-label">Stanza</InputLabel>
               <Dropdown onSelect={this.selectGroup.bind(this)}></Dropdown>
@@ -79,7 +72,19 @@ class App extends Component {
         
         <br></br>
 
-        <Grid layoutID={this.state.selectedGroup} devices={this.state.devices}></Grid>
+        {
+          (this.state.selectedGroup==="0")?
+          <Grid layoutID="0"></Grid>:null
+        }
+        {
+          this.state.groups.map(el=>{
+            // {console.log("SHOW GROUP", el.id)}
+            if (el.id===this.state.selectedGroup)
+              return <Grid layoutID={el.id}></Grid>
+            else
+              return null
+          })
+        }
         
       </div>
     )
