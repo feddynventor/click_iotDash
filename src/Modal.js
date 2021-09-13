@@ -175,7 +175,7 @@ export default function SpringModal(props) {
               }}>IDENTIFICA</Button>&nbsp;
               <Button variant='contained' color='secondary'
               onClick={() => {navigator.clipboard.writeText(props.device.id)}}>Copia ID</Button>
-              &nbsp;<p><i>IP : {props.device.ip}</i></p>
+              &nbsp;<p><i>{(props.device.ip)?props.device.ip:"IP non assegnato"}</i></p>
             </div>
           </div>
         </Fade>
